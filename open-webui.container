@@ -8,6 +8,7 @@ Image=ghcr.io/open-webui/open-webui:latest
 AutoUpdate=registry
 ContainerName=ollama-web
 Environment=ANONYMIZED_TELEMETRY=False
+Environment=WEBUI_SECRET_KEY=abc123
 Environment=WEBUI_AUTH=false
 
 # Ollama

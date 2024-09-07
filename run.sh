@@ -1,11 +1,12 @@
 #!/bin/sh
 
-ROOT_DIR=${pwd}
+ROOT_DIR=$(pwd)
+DEPLOYMENT_CHOICES=("Local only" "Network")
+GPU_CHOICES=("Nvidia (CUDA)" "AMD (ROCm)" "CPU (slow)")
 
 echo "INSTALLING OLLAMA"
 
 echo "[INFO] Detecting Hardware..."
-GPU_CHOICES=("Nvidia (CUDA)" "AMD (ROCm)" "CPU (slow)")
 DETECTED_OPTIONS=()
 # Detect nvidia drivers
 if which nvidia-smi > /dev/null 2>&1; then
@@ -27,13 +28,13 @@ case "$GPU_SELECTION" in
     "Nvidia (CUDA)")
         IMAGE=latest
         PROFILE=cuda
-        DEVICE="nvidia.com\/gpu=all"
+        DEVICE="nvidia.com/gpu=all"
         ;;
 
     "AMD (ROCm)")
         IMAGE=rocm
         PROFILE=rocm
-        DEVICE="\/dev\/dri:\/dev\/kfd"
+        DEVICE="/dev/dri:/dev/kfd"
         ;;
     *)
         IMAGE=latest
@@ -49,7 +50,7 @@ if [  ! -f ~/.config/containers/systemd/ollama.container ]; then
     cp ollama.container ~/.config/containers/systemd
     sed -e "s/IMAGE/${IMAGE}/g" \
         -i ~/.config/containers/systemd/ollama.container
-    sed -e "s/DEVICE/${DEVICE}/g" \
+    sed -e "s:DEVICE:${DEVICE}:g" \
         -i ~/.config/containers/systemd/ollama.container
 else
     echo "[WARNING] Ollama container already exists, skipping..."
@@ -61,9 +62,8 @@ systemctl --user start ollama.service
 
 echo "INSTALLING COMFYUI"
 
-if [ ${GPU_SELECTION} == "CPU (slow)" ]
+if [ ${GPU_SELECTION} == "CPU (slow)" ]; then
     echo "[WARNING] GPU is not available or not selected. Not building ComfyUI"
-
 else
     echo "[INFO] Cloning from github.com/lslowmotion/stable-diffusion-webui-podman"
     git clone https://github.com/lslowmotion/stable-diffusion-webui-podman.git
@@ -77,31 +77,34 @@ else
     echo "[INFO] Building ComfyUI with FLUX.1-dev support"
     podman-compose --profile comfy-${PROFILE} build
 
+    cd $ROOT_DIR
+
     echo "[INFO] Copy ComfyUI quadlet"
-    mkdir -p ~/.config/containers/systemd
-    cp comfy.container ~/.config/containers/systemd
+    if [  ! -f ~/.config/containers/systemd/comfy.container ]; then
+        mkdir -p ~/.config/containers/systemd
+        cp comfy.container ~/.config/containers/systemd
 
-    DEPLOYMENT_CHOICES=("Local only" "Network")
+        DEPLOYMENT=$(printf '%s\n' "${DEPLOYMENT_CHOICES[@]}" | gum choose --select-if-one --header "Select deployment")
 
-    DEPLOYMENT=$(printf '%s\n' "${DEPLOYMENT_CHOICES[@]}" | gum choose --select-if-one --header "Select deployment")
+        if [ ${DEPLOYMENT} == "Local only" ]; then
+            sed -e "s/0.0.0.0://g" \
+                -i ~/.config/containers/systemd/comfy.container
+        fi
 
-    if [ ${DEPLOYMENT} == "Local only" ]
-        sed -e "s/0.0.0.0://g" \
+        sed -e "s/PROFILE/${PROFILE}/g" \
             -i ~/.config/containers/systemd/comfy.container
-    fi
+        sed -e "s:DEVICE:${DEVICE}:g" \
+            -i ~/.config/containers/systemd/comfy.container
+        sed -e "s:ROOT_DIR:${ROOT_DIR}:g" \
+            -i ~/.config/containers/systemd/comfy.container
 
-    sed -e "s/PROFILE/${PROFILE}/g" \
-        -i ~/.config/containers/systemd/comfy.container
-    sed -e "s/DEVICE/${DEVICE}/g" \
-        -i ~/.config/containers/systemd/comfy.container
-    sed -e "s/ROOT_DIR/${ROOT_DIR}/g" \
-        -i ~/.config/containers/systemd/comfy.container
+    else
+        echo "[WARNING] ComfyUI container already exists, skipping..."
+    fi
 
     echo "[INFO] Running ComfyUI service"
     systemctl --user daemon-reload
     systemctl --user start comfy.service
-
-    cd $ROOT_DIR
 fi
 
 echo "INSTALLING SEARXNG"
@@ -116,7 +119,7 @@ if [  ! -f ~/.config/containers/systemd/searxng.container ]; then
 
     DEPLOYMENT=$(printf '%s\n' "${DEPLOYMENT_CHOICES[@]}" | gum choose --select-if-one --header "Select deployment")
 
-    if [ ${DEPLOYMENT} == "Local only" ]
+    if [ ${DEPLOYMENT} == "Local only" ]; then
         sed -e "s/0.0.0.0://g" \
             -i ~/.config/containers/systemd/searxng.container
     fi
@@ -127,6 +130,13 @@ fi
 echo "[INFO] Running SearxNG service"
 systemctl --user daemon-reload
 systemctl --user start searxng.service
+
+echo "[INFO] Allow SearxNG API (json)"
+cp -rf searxng-config/* ~/.local/share/containers/storage/volumes/searxng/_data/
+sed -e "s/ultrasecretkey/$(openssl rand -hex 32)/g" \
+    -i ~/.local/share/containers/storage/volumes/searxng/_data/settings.yml
+
+systemctl --user restart searxng.service
 
 echo "INSTALLING OPEN WEBUI"
 
@@ -140,7 +150,7 @@ if [  ! -f ~/.config/containers/systemd/open-webui.container ]; then
 
     DEPLOYMENT=$(printf '%s\n' "${DEPLOYMENT_CHOICES[@]}" | gum choose --select-if-one --header "Select deployment")
 
-    if [ ${DEPLOYMENT} == "Local only" ]
+    if [ ${DEPLOYMENT} == "Local only" ]; then
         sed -e "s/0.0.0.0://g" \
             -i ~/.config/containers/systemd/open-webui.container
     fi
