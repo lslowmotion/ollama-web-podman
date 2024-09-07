@@ -59,7 +59,7 @@ fi
 
 printf "\n[INFO] Running Ollama service\n"
 systemctl --user daemon-reload
-systemctl --user start ollama.service
+systemctl --user restart ollama.service
 
 printf "\n\n*****INSTALLING COMFYUI*****\n"
 
@@ -70,7 +70,7 @@ else
 
     printf "\n[INFO] Downloading various models including FLUX.1-dev and its dependencies\n"
     podman-compose --profile download build
-    podman-compose --profile download up
+    podman run -it --rm -v ./data:/data:Z localhost/models-downloader:latest
 
     printf "\n[INFO] Building ComfyUI with FLUX.1-dev support\n"
     podman-compose --profile comfy-${PROFILE} build
@@ -102,7 +102,7 @@ else
 
     printf "\n[INFO] Running ComfyUI service\n"
     systemctl --user daemon-reload
-    systemctl --user start comfy.service
+    systemctl --user restart comfy.service
 fi
 
 printf "\n\n*****INSTALLING SEARXNG*****\n"
@@ -125,15 +125,12 @@ else
     printf "\n[WARNING] SearXNG container already exists, skipping...\n"
 fi
 
-printf "\n[INFO] Running SearXNG service\n"
-systemctl --user daemon-reload
-systemctl --user start searxng.service
-
-printf "\n[INFO] Allow SearXNG API (json)\n"
+printf "\n[INFO] Running SearXNG service and copying SearXNG configs\n"
 cp -rf searxng-config/* ~/.local/share/containers/storage/volumes/searxng/_data/
 sed -e "s/ultrasecretkey/$(openssl rand -hex 32)/g" \
     -i ~/.local/share/containers/storage/volumes/searxng/_data/settings.yml
 
+systemctl --user daemon-reload
 systemctl --user restart searxng.service
 
 printf "\n\n*****INSTALLING OPEN WEBUI*****\n"
@@ -158,4 +155,4 @@ fi
 
 printf "\n[INFO] Running Open WebUI service\n"
 systemctl --user daemon-reload
-systemctl --user start open-webui.service
+systemctl --user restart open-webui.service
