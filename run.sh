@@ -45,7 +45,7 @@ esac
 printf "\n[INFO] Pulling Ollama\n"
 podman pull docker.io/ollama/ollama:${IMAGE}
 
-printf "\n[INFO] Copy Ollama quadlet\n"
+printf "\n[INFO] Copying Ollama quadlet\n"
 if [  ! -f ~/.config/containers/systemd/ollama.container ]; then
     mkdir -p ~/.config/containers/systemd
     cp ollama.container ~/.config/containers/systemd
