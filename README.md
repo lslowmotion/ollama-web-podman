@@ -5,7 +5,7 @@ One script to run them all!
 This script will help you run:
 - Ollama (CUDA/ROCm/CPU)
 - ComfyUI with FLUX.1-dev support (CUDA/ROCm)
-- SearxNG
+- SearXNG
 - Open WebUI
 
 ## Prerequisites
@@ -24,7 +24,7 @@ Run `run.sh` and follow the instructions.
 |---------------|-----------------------|
 | Ollama        | 11434                 |
 | ComfyUI       | http://localhost:7860 |
-| SearxNg       | http://localhost:4000 |
+| SearXNG       | http://localhost:4000 |
 | Open WebUI    | http://localhost:3000 |
 
 ## Deployment

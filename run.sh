@@ -107,10 +107,10 @@ fi
 
 printf "\n\n*****INSTALLING SEARXNG*****\n"
 
-printf "\n[INFO] Pulling SearxNG\n"
+printf "\n[INFO] Pulling SearXNG\n"
 podman pull docker.io/searxng/searxng:latest
 
-printf "\n[INFO] Copying SearxNG quadlet\n"
+printf "\n[INFO] Copying SearXNG quadlet\n"
 if [  ! -f ~/.config/containers/systemd/searxng.container ]; then
     mkdir -p ~/.config/containers/systemd
     cp searxng.container ~/.config/containers/systemd
@@ -122,14 +122,14 @@ if [  ! -f ~/.config/containers/systemd/searxng.container ]; then
             -i ~/.config/containers/systemd/searxng.container
     fi
 else
-    printf "\n[WARNING] SearxNG container already exists, skipping...\n"
+    printf "\n[WARNING] SearXNG container already exists, skipping...\n"
 fi
 
-printf "\n[INFO] Running SearxNG service\n"
+printf "\n[INFO] Running SearXNG service\n"
 systemctl --user daemon-reload
 systemctl --user start searxng.service
 
-printf "\n[INFO] Allow SearxNG API (json)\n"
+printf "\n[INFO] Allow SearXNG API (json)\n"
 cp -rf searxng-config/* ~/.local/share/containers/storage/volumes/searxng/_data/
 sed -e "s/ultrasecretkey/$(openssl rand -hex 32)/g" \
     -i ~/.local/share/containers/storage/volumes/searxng/_data/settings.yml
