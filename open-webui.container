@@ -1,15 +1,13 @@
 [Unit]
 Description=An Open WebUI container
-After=network-online.target ollama.service
-Requires=ollama.service
+After=network-online.target
 
 [Container]
 Image=ghcr.io/open-webui/open-webui:latest
 AutoUpdate=registry
-ContainerName=ollama-web
+ContainerName=open-webui
 Environment=ANONYMIZED_TELEMETRY=False
-Environment=WEBUI_SECRET_KEY=abc123
-Environment=WEBUI_AUTH=false
+Environment=WEBUI_AUTH=true
 
 # Ollama
 Environment=OLLAMA_BASE_URL=http://127.0.0.1:11434
