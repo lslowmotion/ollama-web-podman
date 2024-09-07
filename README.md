@@ -31,7 +31,7 @@ Run `run.sh` and follow the instructions.
 The run script will ask about your choice of deployment of various services listed above.
 | Choice        | Description                                                   |
 |---------------|---------------------------------------------------------------|
-| Local only    | Service would only accessible by browser on the local machine |
+| Local         | Service would only accessible by browser on the local machine |
 | Network       | Service would be accessible by others on the network          |
 
 ## Important Notes
