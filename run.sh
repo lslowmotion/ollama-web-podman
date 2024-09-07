@@ -2,7 +2,7 @@
 
 ROOT_DIR=${pwd}
 
-echo "[INFO] Pulling necessary containers"
+echo "INSTALLING OLLAMA"
 
 echo "[INFO] Detecting Hardware..."
 GPU_CHOICES=("Nvidia (CUDA)" "AMD (ROCm)" "CPU (slow)")
@@ -27,13 +27,13 @@ case "$GPU_SELECTION" in
     "Nvidia (CUDA)")
         IMAGE=latest
         PROFILE=cuda
-        DEVICE=nvidia.com/gpu=all
+        DEVICE="nvidia.com\/gpu=all"
         ;;
 
     "AMD (ROCm)")
         IMAGE=rocm
         PROFILE=rocm
-        DEVICE=/dev/dri:/dev/kfd
+        DEVICE="\/dev\/dri:\/dev\/kfd"
         ;;
     *)
         IMAGE=latest
@@ -59,7 +59,9 @@ echo "[INFO] Running Ollama service"
 systemctl --user daemon-reload
 systemctl --user start ollama.service
 
-if [ ${#GPU_SELECTION} == "CPU (slow)" ]
+echo "INSTALLING COMFYUI"
+
+if [ ${GPU_SELECTION} == "CPU (slow)" ]
     echo "[WARNING] GPU is not available or not selected. Not building ComfyUI"
 
 else
@@ -83,7 +85,7 @@ else
 
     DEPLOYMENT=$(printf '%s\n' "${DEPLOYMENT_CHOICES[@]}" | gum choose --select-if-one --header "Select deployment")
 
-    if [ ${#DEPLOYMENT} == "Local only" ]
+    if [ ${DEPLOYMENT} == "Local only" ]
         sed -e "s/0.0.0.0://g" \
             -i ~/.config/containers/systemd/comfy.container
     fi
@@ -102,6 +104,8 @@ else
     cd $ROOT_DIR
 fi
 
+echo "INSTALLING SEARXNG"
+
 echo "[INFO] Pulling SearxNG"
 podman pull docker.io/searxng/searxng:latest
 
@@ -112,7 +116,7 @@ if [  ! -f ~/.config/containers/systemd/searxng.container ]; then
 
     DEPLOYMENT=$(printf '%s\n' "${DEPLOYMENT_CHOICES[@]}" | gum choose --select-if-one --header "Select deployment")
 
-    if [ ${#DEPLOYMENT} == "Local only" ]
+    if [ ${DEPLOYMENT} == "Local only" ]
         sed -e "s/0.0.0.0://g" \
             -i ~/.config/containers/systemd/searxng.container
     fi
@@ -124,6 +128,8 @@ echo "[INFO] Running SearxNG service"
 systemctl --user daemon-reload
 systemctl --user start searxng.service
 
+echo "INSTALLING OPEN WEBUI"
+
 echo "[INFO] Pulling Open WebUI"
 podman pull ghcr.io/open-webui/open-webui:latest
 
@@ -134,7 +140,7 @@ if [  ! -f ~/.config/containers/systemd/open-webui.container ]; then
 
     DEPLOYMENT=$(printf '%s\n' "${DEPLOYMENT_CHOICES[@]}" | gum choose --select-if-one --header "Select deployment")
 
-    if [ ${#DEPLOYMENT} == "Local only" ]
+    if [ ${DEPLOYMENT} == "Local only" ]
         sed -e "s/0.0.0.0://g" \
             -i ~/.config/containers/systemd/open-webui.container
     fi

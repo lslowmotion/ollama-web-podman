@@ -13,7 +13,7 @@ ContainerName=comfy
 # If you want to make it only accessible locally, change to 127.0.0.1
 PublishPort=0.0.0.0:7860:7860
 
-# Mount Ollama model location
+# Mount ComfyUI model location
 Volume=ROOT_DIR/stable-diffusion-webui-podman/data:/data:Z
 Volume=ROOT_DIR/stable-diffusion-webui-podman/output:/output:Z
 
