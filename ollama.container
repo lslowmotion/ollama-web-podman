@@ -10,6 +10,7 @@ ExecStartPre=-mkdir -p %h/.ollama
 
 [Container]
 ContainerName=ollama
+AutoUpdate=registry
 PublishPort=11434:11434
 RemapUsers=keep-id
 RunInit=yes

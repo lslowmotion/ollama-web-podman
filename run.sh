@@ -38,6 +38,7 @@ case "$GPU_SELECTION" in
         ;;
     *)
         IMAGE=latest
+        DEVICE=""
         ;;
 esac
 
