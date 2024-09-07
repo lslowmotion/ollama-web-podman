@@ -20,12 +20,12 @@ git clone --recursive https://github.com/lslowmotion/ollama-web-podman.git
 Run `run.sh` and follow the instructions.
 
 ## Address/Ports
-| Service       | Address/Ports         |
-|---------------|-----------------------|
-| Ollama        | 11434                 |
-| ComfyUI       | http://localhost:7860 |
-| SearXNG       | http://localhost:4000 |
-| Open WebUI    | http://localhost:3000 |
+| Service       | Address/Ports             |
+|---------------|---------------------------|
+| Ollama        | http://localhost:11434    |
+| ComfyUI       | http://localhost:7860     |
+| SearXNG       | http://localhost:4000     |
+| Open WebUI    | http://localhost:3000     |
 
 ## Deployment
 The run script will ask about your choice of deployment of various services listed above.
