@@ -1,0 +1,38 @@
+[Unit]
+Description=An Open WebUI container
+After=network-online.target ollama.service
+Requires=ollama.service
+
+[Container]
+Image=ghcr.io/open-webui/open-webui:latest
+AutoUpdate=registry
+ContainerName=ollama-web
+Environment=ANONYMIZED_TELEMETRY=False
+Environment=WEBUI_AUTH=false
+
+# Ollama
+Environment=OLLAMA_BASE_URL=http://127.0.0.1:11434
+
+# Image gen using ComfyUI
+Environment=COMFYUI_BASE_URL=http://127.0.0.1:7860
+
+# Search using searxng
+Environment=ENABLE_RAG_WEB_SEARCH=true
+Environment=RAG_WEB_SEARCH_ENGINE=searxng
+Environment=RAG_WEB_SEARCH_RESULT_COUNT=5
+Environment=RAG_WEB_SEARCH_CONCURRENT_REQUESTS=10
+Environment=SEARXNG_QUERY_URL=http://127.0.0.1:4000
+
+# Persist the change and configs made in Open WebUI
+Volume=open-webui:/app/backend/data
+
+# If you want to make it only accessible locally, change to 127.0.0.1
+PublishPort=0.0.0.0:3000:8080
+
+Network=pasta:-T,11434,-T,7860,-T,4000
+
+[Service]
+TimeoutStartSec=900
+
+[Install]
+WantedBy=multi-user.target

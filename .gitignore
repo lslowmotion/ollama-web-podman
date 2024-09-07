@@ -1,0 +1,9 @@
+/.devcontainer
+/docker-compose.override.yml
+
+# VSCode specific
+*.code-workspace
+/.vscode
+
+# Git dependencies
+/stable-diffusion-webui-podman

@@ -1,0 +1,27 @@
+[Unit]
+Description=ComfyUI container
+After=local-fs.target
+Requires=podman.socket
+
+[Service]
+Restart=always
+TimeoutStartSec=60
+
+[Container]
+ContainerName=comfy
+
+# If you want to make it only accessible locally, change to 127.0.0.1
+PublishPort=0.0.0.0:7860:7860
+
+# Mount Ollama model location
+Volume=ROOT_DIR/stable-diffusion-webui-podman/data:/data:Z
+Volume=ROOT_DIR/stable-diffusion-webui-podman/output:/output:Z
+
+PodmanArgs=--ulimit=host
+PodmanArgs=--security-opt=label=disable
+
+Image=localhost/comfy-PROFILE:latest
+AddDevice=DEVICE
+
+[Install]
+RequiredBy=multi-user.target

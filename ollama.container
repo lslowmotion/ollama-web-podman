@@ -1,0 +1,33 @@
+[Unit]
+Description=The Ollama container
+After=local-fs.target
+
+[Service]
+Restart=always
+TimeoutStartSec=60
+# Ensure there's a userland podman.sock
+ExecStartPre=/bin/systemctl --user enable podman.socket
+# Ensure that the dir exists
+ExecStartPre=-mkdir -p %h/.ollama
+
+[Container]
+ContainerName=ollama
+PublishPort=11434:11434
+RemapUsers=keep-id
+RunInit=yes
+NoNewPrivileges=no
+
+# Mount Ollama model location
+Volume=%h/.ollama:/.ollama
+
+PodmanArgs=--userns=keep-id
+PodmanArgs=--group-add=keep-groups
+PodmanArgs=--ulimit=host
+PodmanArgs=--security-opt=label=disable
+PodmanArgs=--cgroupns=host
+
+Image=docker.io/ollama/ollama:IMAGE
+AddDevice=DEVICE
+
+[Install]
+RequiredBy=multi-user.target

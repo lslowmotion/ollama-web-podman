@@ -1,0 +1,19 @@
+[Unit]
+Description=SearxNG container
+After=network-online.target
+
+[Container]
+Image=docker.io/searxng/searxng:latest
+ContainerName=searxng
+
+# If you want to make it only accessible locally, change to 127.0.0.1
+PublishPort=0.0.0.0:4000:8080
+
+# Persist the change and configs made in SearxNG
+Volume=searxng:/etc/searxng
+
+[Service]
+TimeoutStartSec=900
+
+[Install]
+WantedBy=multi-user.target
