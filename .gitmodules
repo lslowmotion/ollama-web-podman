@@ -1,0 +1,3 @@
+[submodule "stable-diffusion-webui-podman"]
+	path = stable-diffusion-webui-podman
+	url = https://github.com/lslowmotion/stable-diffusion-webui-podman
