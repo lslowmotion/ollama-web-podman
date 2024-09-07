@@ -13,4 +13,8 @@ This script will help you run:
 - [Gum](https://github.com/charmbracelet/gum)
 
 ## Quick Setup
-Just run `run.sh` and follow the instructions.
+Clone the repository
+```
+git clone --recursive https://github.com/lslowmotion/ollama-web-podman.git
+```
+Run `run.sh` and follow the instructions.
