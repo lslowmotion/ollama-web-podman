@@ -48,7 +48,7 @@ podman pull docker.io/ollama/ollama:${IMAGE}
 printf "\n[INFO] Copying Ollama quadlet\n"
 if [  ! -f ~/.config/containers/systemd/ollama.container ]; then
     mkdir -p ~/.config/containers/systemd
-    cp ollama.container ~/.config/containers/systemd
+    cp quadlets/ollama.container ~/.config/containers/systemd
     sed -e "s/IMAGE/${IMAGE}/g" \
         -i ~/.config/containers/systemd/ollama.container
     sed -e "s:DEVICE:${DEVICE}:g" \
@@ -80,7 +80,7 @@ else
     printf "\n[INFO] Copying ComfyUI quadlet\n"
     if [  ! -f ~/.config/containers/systemd/comfy.container ]; then
         mkdir -p ~/.config/containers/systemd
-        cp comfy.container ~/.config/containers/systemd
+        cp quadlets/comfy.container ~/.config/containers/systemd
 
         DEPLOYMENT=$(printf '%s\n' "${DEPLOYMENT_CHOICES[@]}" | gum choose --select-if-one --header "Select deployment")
 
@@ -113,7 +113,7 @@ podman pull docker.io/searxng/searxng:latest
 printf "\n[INFO] Copying SearXNG quadlet\n"
 if [  ! -f ~/.config/containers/systemd/searxng.container ]; then
     mkdir -p ~/.config/containers/systemd
-    cp searxng.container ~/.config/containers/systemd
+    cp quadlets/searxng.container ~/.config/containers/systemd
 
     DEPLOYMENT=$(printf '%s\n' "${DEPLOYMENT_CHOICES[@]}" | gum choose --select-if-one --header "Select deployment")
 
@@ -141,7 +141,7 @@ podman pull ghcr.io/open-webui/open-webui:latest
 printf "\n[INFO] Copying Open WebUI quadlet\n"
 if [  ! -f ~/.config/containers/systemd/open\-webui.container ]; then
     mkdir -p ~/.config/containers/systemd
-    cp open-webui.container ~/.config/containers/systemd
+    cp quadlets/open-webui.container ~/.config/containers/systemd
 
     DEPLOYMENT=$(printf '%s\n' "${DEPLOYMENT_CHOICES[@]}" | gum choose --select-if-one --header "Select deployment")
 
