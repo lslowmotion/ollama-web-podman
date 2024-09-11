@@ -82,7 +82,7 @@ else
         mkdir -p ~/.config/containers/systemd
         cp quadlets/comfy.container ~/.config/containers/systemd
 
-        DEPLOYMENT=$(printf '%s\n' "${DEPLOYMENT_CHOICES[@]}" | gum choose --select-if-one --header "Select deployment")
+        DEPLOYMENT=$(printf '%s\n' "${DEPLOYMENT_CHOICES[@]}" | gum choose --select-if-one --header "Select ComfyUI deployment")
 
         if [ ${DEPLOYMENT} == "Local" ]; then
             sed -e "s/0.0.0.0://g" \
@@ -115,7 +115,7 @@ if [  ! -f ~/.config/containers/systemd/searxng.container ]; then
     mkdir -p ~/.config/containers/systemd
     cp quadlets/searxng.container ~/.config/containers/systemd
 
-    DEPLOYMENT=$(printf '%s\n' "${DEPLOYMENT_CHOICES[@]}" | gum choose --select-if-one --header "Select deployment")
+    DEPLOYMENT=$(printf '%s\n' "${DEPLOYMENT_CHOICES[@]}" | gum choose --select-if-one --header "Select SearXNG deployment")
 
     if [ ${DEPLOYMENT} == "Local" ]; then
         sed -e "s/0.0.0.0://g" \
@@ -143,7 +143,7 @@ if [  ! -f ~/.config/containers/systemd/open\-webui.container ]; then
     mkdir -p ~/.config/containers/systemd
     cp quadlets/open-webui.container ~/.config/containers/systemd
 
-    DEPLOYMENT=$(printf '%s\n' "${DEPLOYMENT_CHOICES[@]}" | gum choose --select-if-one --header "Select deployment")
+    DEPLOYMENT=$(printf '%s\n' "${DEPLOYMENT_CHOICES[@]}" | gum choose --select-if-one --header "Select Open WebUI deployment")
 
     if [ ${DEPLOYMENT} == "Local" ]; then
         sed -e "s/0.0.0.0://g" \
