@@ -34,7 +34,10 @@ case "$GPU_SELECTION" in
     "AMD (ROCm)")
         IMAGE=rocm
         PROFILE=rocm
-        DEVICE="/dev/dri:/dev/kfd"
+        read -r -d '' DEVICE <<-'EOF'
+AddDevice=/dev/dri
+AddDevice=/dev/kfd
+EOF
         ;;
     *)
         IMAGE=latest
