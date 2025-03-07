@@ -3,8 +3,8 @@
 One script to run them all!
 
 This script will help you run:
-- Ollama (CUDA/ROCm/CPU)
-- ComfyUI with FLUX.1-dev support (CUDA/ROCm)
+- Ollama (CUDA/ROCm/IPEX/CPU)
+- ComfyUI with FLUX.1-dev support (CUDA/ROCm/IPEX)
 - SearXNG
 - Open WebUI
 

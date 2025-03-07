@@ -81,25 +81,51 @@ while true; do
                 printf "\n[INFO] Pulling Ollama\n"
                 podman pull docker.io/ollama/ollama:${IMAGE}
 
-                printf "\n[INFO] Copying Ollama quadlet\n"
-                if [  ! -f ~/.config/containers/systemd ]; then
+                printf "\n[INFO] Checking for Ollama quadlet...\n"
+                if [  ! -d ~/.config/containers/systemd ]; then
                     mkdir -p ~/.config/containers/systemd
                 fi
-                cp -rf quadlets/ollama.container ~/.config/containers/systemd
-                sed -e "s/IMAGE/${IMAGE}/g" \
-                    -i ~/.config/containers/systemd/ollama.container
-                sed -e "s:DEVICE:${DEVICE}:g" \
-                    -i ~/.config/containers/systemd/ollama.container
+
+                if [  -f ~/.config/containers/systemd/ollama.container ]; then
+                    read -p "[WARNING] There's already a quadlet for Ollama container. Do you want to replace with a new one? [y/N] " -n 1 -r
+                    if [[ $REPLY =~ ^[Yy]$ ]]; then
+                        printf "\n[INFO] Copying Ollama quadlet...\n"
+                        cp -rf quadlets/ollama.container ~/.config/containers/systemd
+                        sed -e "s/IMAGE/${IMAGE}/g" \
+                            -i ~/.config/containers/systemd/ollama.container
+                        sed -e "s:DEVICE:${DEVICE}:g" \
+                            -i ~/.config/containers/systemd/ollama.container
+                    fi
+                else
+                    printf "\n[INFO] Copying Ollama quadlet...\n"
+                    cp quadlets/ollama.container ~/.config/containers/systemd
+                    sed -e "s/IMAGE/${IMAGE}/g" \
+                        -i ~/.config/containers/systemd/ollama.container
+                    sed -e "s:DEVICE:${DEVICE}:g" \
+                        -i ~/.config/containers/systemd/ollama.container
+                fi
+
+                
             else # Run this part if GPU is Arc (IPEX)
                 cd ollama-ipex-container
                 podman build -t ollama:ipex -f Dockerfile .
                 cd $ROOT_DIR
 
-                printf "\n[INFO] Copying Ollama quadlet\n"
-                if [  ! -f ~/.config/containers/systemd ]; then
+                printf "\n[INFO] Checking for Ollama quadlet...\n"
+                if [  ! -d ~/.config/containers/systemd ]; then
                     mkdir -p ~/.config/containers/systemd
                 fi
-                cp -rf quadlets/ollama-ipex.container ~/.config/containers/systemd/ollama.container 
+
+                if [  -f ~/.config/containers/systemd/ollama.container ]; then
+                    read -p "[WARNING] There's already a quadlet for Ollama container. Do you want to replace with a new one? [y/N] " -n 1 -r
+                    if [[ $REPLY =~ ^[Yy]$ ]]; then
+                        printf "\n[INFO] Copying Ollama quadlet...\n"
+                        cp -rf quadlets/ollama-ipex.container ~/.config/containers/systemd/ollama.container
+                    fi
+                else
+                    printf "\n[INFO] Copying Ollama quadlet...\n"
+                    cp quadlets/ollama-ipex.container ~/.config/containers/systemd/ollama.container
+                fi
             fi
 
             printf "\n[INFO] Running Ollama service\n"
@@ -124,9 +150,33 @@ while true; do
 
                 cd $ROOT_DIR
 
-                printf "\n[INFO] Copying ComfyUI quadlet\n"
-                if [  ! -f ~/.config/containers/systemd/comfy.container ]; then
+                printf "\n[INFO] Checking for ComfyUI quadlet...\n"
+                if [  ! -d ~/.config/containers/systemd/ ]; then
                     mkdir -p ~/.config/containers/systemd
+                fi
+
+                if [  -f ~/.config/containers/systemd/comfy.container ]; then
+                    read -p "[WARNING] There's already a quadlet for ComfyUI container. Do you want to replace with a new one? [y/N] " -n 1 -r
+                    if [[ $REPLY =~ ^[Yy]$ ]]; then
+                        printf "\n[INFO] Copying ComfyUI quadlet...\n"
+                        cp -rf quadlets/comfy.container ~/.config/containers/systemd
+
+                        DEPLOYMENT=$(printf '%s\n' "${DEPLOYMENT_CHOICES[@]}" | gum choose --select-if-one --header "Select ComfyUI deployment")
+
+                        if [ ${DEPLOYMENT} == "Local" ]; then
+                            sed -e "s/0.0.0.0://g" \
+                                -i ~/.config/containers/systemd/comfy.container
+                        fi
+
+                        sed -e "s/PROFILE/${PROFILE}/g" \
+                            -i ~/.config/containers/systemd/comfy.container
+                        sed -e "s:DEVICE:${DEVICE}:g" \
+                            -i ~/.config/containers/systemd/comfy.container
+                        sed -e "s:ROOT_DIR:${ROOT_DIR}:g" \
+                            -i ~/.config/containers/systemd/comfy.container
+                    fi
+                else
+                    printf "\n[INFO] Copying ComfyUI quadlet...\n"
                     cp quadlets/comfy.container ~/.config/containers/systemd
 
                     DEPLOYMENT=$(printf '%s\n' "${DEPLOYMENT_CHOICES[@]}" | gum choose --select-if-one --header "Select ComfyUI deployment")
@@ -142,11 +192,8 @@ while true; do
                         -i ~/.config/containers/systemd/comfy.container
                     sed -e "s:ROOT_DIR:${ROOT_DIR}:g" \
                         -i ~/.config/containers/systemd/comfy.container
-
-                else
-                    printf "\n[WARNING] ComfyUI container service already exists, skipping...\n"
                 fi
-
+                
                 printf "\n[INFO] Running ComfyUI service\n"
                 systemctl --user daemon-reload
                 systemctl --user restart comfy.service
@@ -159,19 +206,27 @@ while true; do
             printf "\n[INFO] Pulling SearXNG\n"
             podman pull docker.io/searxng/searxng:latest
 
-            printf "\n[INFO] Copying SearXNG quadlet\n"
-            if [  ! -f ~/.config/containers/systemd/searxng.container ]; then
+            printf "\n[INFO] Checking for SearXNG quadlet\n"
+            if [  ! -d ~/.config/containers/systemd ]; then
                 mkdir -p ~/.config/containers/systemd
-                cp quadlets/searxng.container ~/.config/containers/systemd
+            fi
 
-                DEPLOYMENT=$(printf '%s\n' "${DEPLOYMENT_CHOICES[@]}" | gum choose --select-if-one --header "Select SearXNG deployment")
-
-                if [ ${DEPLOYMENT} == "Local" ]; then
-                    sed -e "s/0.0.0.0://g" \
-                        -i ~/.config/containers/systemd/searxng.container
+            if [  -f ~/.config/containers/systemd/searxng.container ]; then
+                read -p "[WARNING] There's already a quadlet for SearXNG container. Do you want to replace with a new one? [y/N] " -n 1 -r
+                if [[ $REPLY =~ ^[Yy]$ ]]; then
+                    printf "\n[INFO] Copying SearXNG quadlet...\n"
+                    cp -rf quadlets/searxng.container ~/.config/containers/systemd
                 fi
             else
-                printf "\n[WARNING] SearXNG container service already exists, skipping...\n"
+                printf "\n[INFO] Copying SearXNG quadlet...\n"
+                cp quadlets/searxng.container ~/.config/containers/systemd
+            fi
+
+            DEPLOYMENT=$(printf '%s\n' "${DEPLOYMENT_CHOICES[@]}" | gum choose --select-if-one --header "Select SearXNG deployment")
+
+            if [ ${DEPLOYMENT} == "Local" ]; then
+                sed -e "s/0.0.0.0://g" \
+                    -i ~/.config/containers/systemd/searxng.container
             fi
 
             printf "\n[INFO] Running SearXNG service and copying SearXNG configs\n"
@@ -189,9 +244,26 @@ while true; do
             printf "\n[INFO] Pulling Open WebUI\n"
             podman pull ghcr.io/open-webui/open-webui:latest
 
-            printf "\n[INFO] Copying Open WebUI quadlet\n"
-            if [  ! -f ~/.config/containers/systemd/open\-webui.container ]; then
+            printf "\n[INFO] Checking for Open WebUI quadlet\n"
+            if [  ! -d ~/.config/containers/systemd ]; then
                 mkdir -p ~/.config/containers/systemd
+            fi
+
+            if [  -f ~/.config/containers/systemd/open\-webui.container ]; then
+                read -p "[WARNING] There's already a quadlet for Open WebUI container. Do you want to replace with a new one? [y/N] " -n 1 -r
+                if [[ $REPLY =~ ^[Yy]$ ]]; then
+                    printf "\n[INFO] Copying Open WebUI quadlet...\n"
+                    cp -rf quadlets/open-webui.container ~/.config/containers/systemd
+
+                    DEPLOYMENT=$(printf '%s\n' "${DEPLOYMENT_CHOICES[@]}" | gum choose --select-if-one --header "Select Open WebUI deployment")
+
+                    if [ ${DEPLOYMENT} == "Local" ]; then
+                        sed -e "s/0.0.0.0://g" \
+                            -i ~/.config/containers/systemd/open-webui.container
+                    fi
+                fi
+            else
+                printf "\n[INFO] Copying Open WebUI quadlet...\n"
                 cp quadlets/open-webui.container ~/.config/containers/systemd
 
                 DEPLOYMENT=$(printf '%s\n' "${DEPLOYMENT_CHOICES[@]}" | gum choose --select-if-one --header "Select Open WebUI deployment")
@@ -200,8 +272,6 @@ while true; do
                     sed -e "s/0.0.0.0://g" \
                         -i ~/.config/containers/systemd/open-webui.container
                 fi
-            else
-                printf "\n[WARNING] Open WebUI container service already exists, skipping...\n"
             fi
 
             printf "\n[INFO] Running Open WebUI service\n"
