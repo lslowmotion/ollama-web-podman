@@ -4,6 +4,54 @@ ROOT_DIR=$(pwd)
 DEPLOYMENT_CHOICES=("Local" "Network")
 GPU_CHOICES=("Nvidia (CUDA)" "AMD (ROCm)" "Arc (IPEX)" "CPU (slow)")
 
+printf "\n[INFO] Detecting Hardware...\n"
+DETECTED_OPTIONS=()
+# Detect nvidia drivers
+if lspci | grep ' VGA ' | grep -sq NVIDIA; then
+    DETECTED_OPTIONS+=("${GPU_CHOICES[0]}")
+fi
+# Detect AMD hardware
+if lspci | grep ' VGA ' | grep -sq AMD; then
+    DETECTED_OPTIONS+=("${GPU_CHOICES[1]}")
+fi
+# Detect Arc hardware
+if lspci | grep ' VGA ' | grep -sq Arc; then
+    DETECTED_OPTIONS+=("${GPU_CHOICES[2]}")
+fi
+# Nothing detected, ask the user
+if [ ${#DETECTED_OPTIONS[@]} -eq 0 ]; then
+    GPU_SELECTION=$(printf '%s\n' "${GPU_CHOICES[@]}" | gum choose --select-if-one --header "Select the type of graphics card you want to use")
+else
+    GPU_SELECTION=$(printf '%s\n' "${DETECTED_OPTIONS[@]}" | gum choose --select-if-one --header "Select the type of graphics card you want to use")
+fi
+printf "\n[INFO] Selected ${GPU_SELECTION}!\n"
+
+case "$GPU_SELECTION" in
+    "Nvidia (CUDA)")
+        IMAGE=latest
+        PROFILE=cuda
+        DEVICE="nvidia.com/gpu=all"
+        ;;
+
+    "AMD (ROCm)")
+        IMAGE=rocm
+        PROFILE=rocm
+        read -r -d '' DEVICE <<-'EOF'
+AddDevice=/dev/dri
+AddDevice=/dev/kfd
+EOF
+        ;;
+    "Arc (IPEX)")
+        IMAGE=latest
+        PROFILE=ipex
+        DEVICE="/dev/dri"
+        ;;
+    *)
+        IMAGE=latest
+        DEVICE=""
+        ;;
+esac
+
 # Function to display the main menu
 display_menu() {
     clear
@@ -28,51 +76,8 @@ while true; do
         1)
             printf "*****INSTALLING OLLAMA*****\n"
 
-            printf "\n[INFO] Detecting Hardware...\n"
-            DETECTED_OPTIONS=()
-            # Detect nvidia drivers
-            if lspci | grep ' VGA ' | grep -sq NVIDIA; then
-                DETECTED_OPTIONS+=("${GPU_CHOICES[0]}")
-            fi
-            # Detect AMD hardware
-            if lspci | grep ' VGA ' | grep -sq AMD; then
-                DETECTED_OPTIONS+=("${GPU_CHOICES[1]}")
-            fi
-            # Detect Arc hardware
-            if lspci | grep ' VGA ' | grep -sq Arc; then
-                DETECTED_OPTIONS+=("${GPU_CHOICES[2]}")
-            fi
-            # Nothing detected, ask the user
-            if [ ${#DETECTED_OPTIONS[@]} -eq 0 ]; then
-                GPU_SELECTION=$(printf '%s\n' "${GPU_CHOICES[@]}" | gum choose --select-if-one --header "Select the type of graphics card you want to use")
-            else
-                GPU_SELECTION=$(printf '%s\n' "${DETECTED_OPTIONS[@]}" | gum choose --select-if-one --header "Select the type of graphics card you want to use")
-            fi
-            printf "\n[INFO] Selected ${GPU_SELECTION}!\n"
-
             # Run this part if GPU is not Arc (IPEX)
-            if [ $GPU_SELECTION != "Arc (IPEX)" ]; then
-                case "$GPU_SELECTION" in
-                    "Nvidia (CUDA)")
-                        IMAGE=latest
-                        PROFILE=cuda
-                        DEVICE="nvidia.com/gpu=all"
-                        ;;
-
-                    "AMD (ROCm)")
-                        IMAGE=rocm
-                        PROFILE=rocm
-                        read -r -d '' DEVICE <<-'EOF'
-AddDevice=/dev/dri
-AddDevice=/dev/kfd
-EOF
-                        ;;
-                    *)
-                        IMAGE=latest
-                        DEVICE=""
-                        ;;
-                esac
-
+            if [ $PROFILE != "ipex" ]; then
                 printf "\n[INFO] Pulling Ollama\n"
                 podman pull docker.io/ollama/ollama:${IMAGE}
 
@@ -88,7 +93,7 @@ EOF
             else # Run this part if GPU is Arc (IPEX)
                 cd ollama-ipex-container
                 podman build -t ollama:ipex -f Dockerfile .
-                cd ..
+                cd $ROOT_DIR
 
                 printf "\n[INFO] Copying Ollama quadlet\n"
                 if [  ! -f ~/.config/containers/systemd ]; then
