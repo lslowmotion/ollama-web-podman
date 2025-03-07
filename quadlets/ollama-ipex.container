@@ -1,0 +1,24 @@
+[Unit]
+Description=The Ollama container
+After=local-fs.target
+
+[Service]
+Restart=always
+TimeoutStartSec=60
+# Ensure that the dir exists
+ExecStartPre=-mkdir -p %h/.ollama
+
+[Container]
+ContainerName=ollama
+PublishPort=11434:11434
+
+# Mount Ollama model location
+Volume=%h/.ollama:/root/.ollama
+
+PodmanArgs=--privileged
+
+AddDevice=/dev/dri
+Image=localhost/ollama-ipex:latest
+
+[Install]
+RequiredBy=multi-user.target
