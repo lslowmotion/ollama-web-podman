@@ -48,4 +48,4 @@ VAE would need to be put in `stable-diffusion-webui-podman/data/models/VAE`
 ### Integrating ComfyUI Image Generation to Open WebUI
 ComfyUI workflow would need to be set up first to be able to be used with Open WebUI.
 
-[Setting Up Open WebUI with ComfyUI](https://docs.openwebui.com/tutorial/images#setting-up-open-webui-with-comfyui)
+[Setting Up Open WebUI with ComfyUI](https://docs.openwebui.com/tutorials/images/)
