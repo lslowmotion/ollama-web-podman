@@ -2,59 +2,49 @@
 
 ROOT_DIR=$(pwd)
 DEPLOYMENT_CHOICES=("Local" "Network")
-GPU_CHOICES=("Nvidia (CUDA)" "AMD (ROCm)" "Arc (IPEX)" "CPU (slow)")
 
-printf "\n[INFO] Detecting Hardware...\n"
-DETECTED_OPTIONS=()
-# Detect nvidia drivers
-if lspci | grep ' VGA ' | grep -sq NVIDIA; then
-    DETECTED_OPTIONS+=("${GPU_CHOICES[0]}")
-fi
-# Detect AMD hardware
-if lspci | grep ' VGA ' | grep -sq AMD; then
-    DETECTED_OPTIONS+=("${GPU_CHOICES[1]}")
-fi
-# Detect Arc hardware
-if lspci | grep ' VGA ' | grep -sq Arc; then
-    DETECTED_OPTIONS+=("${GPU_CHOICES[2]}")
-fi
-# Nothing detected, ask the user
-if [ ${#DETECTED_OPTIONS[@]} -eq 0 ]; then
-    GPU_SELECTION=$(printf '%s\n' "${GPU_CHOICES[@]}" | gum choose --select-if-one --header "Select the type of graphics card you want to use")
-else
-    GPU_SELECTION=$(printf '%s\n' "${DETECTED_OPTIONS[@]}" | gum choose --select-if-one --header "Select the type of graphics card you want to use")
-fi
-printf "\n[INFO] Selected ${GPU_SELECTION}!\n"
+# Source GPU configuration from validate-gpu.sh
+echo ""
+echo "========================================"
+echo "  GPU Detection and Validation"
+echo "========================================"
+echo ""
 
-case "$GPU_SELECTION" in
-    "Nvidia (CUDA)")
-        IMAGE=latest
-        PROFILE=cuda
+# Run GPU validation script and capture output
+GPU_CONFIG=$(./validate-gpu.sh)
+echo "$GPU_CONFIG"
+
+# Parse GPU configuration from script output
+GPU_SELECTION=$(echo "$GPU_CONFIG" | grep "^Selected:" | sed 's/Selected: //')
+GPU_PROFILE=$(echo "$GPU_CONFIG" | grep "^  Profile:" | sed 's/  Profile: //')
+GPU_IMAGE=$(echo "$GPU_CONFIG" | grep "^  Image:" | sed 's/  Image: //')
+GPU_DEVICE=$(echo "$GPU_CONFIG" | grep "^  Device:" | sed 's/  Device: //')
+
+# Set IMAGE and PROFILE variables for compatibility
+IMAGE="$GPU_IMAGE"
+PROFILE="$GPU_PROFILE"
+
+# Set DEVICE variable based on profile
+case "$GPU_PROFILE" in
+    "cuda")
         DEVICE="nvidia.com/gpu=all"
         ;;
-
-    "AMD (ROCm)")
-        IMAGE=rocm
-        PROFILE=rocm
+    "rocm")
         read -r -d '' DEVICE <<-'EOF'
 AddDevice=/dev/dri
 AddDevice=/dev/kfd
 EOF
         ;;
-    "Arc (IPEX)")
-        IMAGE=latest
-        PROFILE=ipex
+    "ipex")
         DEVICE="/dev/dri"
         ;;
     *)
-        IMAGE=latest
         DEVICE=""
         ;;
 esac
 
 # Function to display the main menu
 display_menu() {
-    clear
     echo "-------------------------------------"
     echo "      Choose software to deploy      "
     echo "-------------------------------------"
@@ -145,7 +135,7 @@ while true; do
                 podman-compose --profile download build
                 podman run -it --rm -v ./data:/data:Z localhost/models-downloader:latest
 
-                printf "\n[INFO] Building ComfyUI with FLUX.1-dev support\n"
+                printf "\n[INFO] Building ComfyUI\n"
                 podman-compose --profile comfy-${PROFILE} build
 
                 cd $ROOT_DIR
@@ -230,6 +220,7 @@ while true; do
             fi
 
             printf "\n[INFO] Running SearXNG service and copying SearXNG configs\n"
+            mkdir ~/.local/share/containers/storage/volumes/searxng/_data/ -p
             cp -rf searxng-config/* ~/.local/share/containers/storage/volumes/searxng/_data/
             sed -e "s/ultrasecretkey/$(openssl rand -hex 32)/g" \
                 -i ~/.local/share/containers/storage/volumes/searxng/_data/settings.yml
