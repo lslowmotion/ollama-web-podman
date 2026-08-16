@@ -484,7 +484,6 @@ engines:
   - name: bing
     engine: bing
     shortcut: bi
-    disabled: true
 
   - name: bing images
     engine: bing_images
@@ -1500,7 +1499,6 @@ engines:
     categories: [general, web]
     shortcut: ps
     timeout: 4.0
-    disabled: true
 
   - name: presearch images
     engine: presearch
@@ -1509,7 +1507,6 @@ engines:
     categories: [images, web]
     timeout: 4.0
     shortcut: psimg
-    disabled: true
 
   - name: presearch videos
     engine: presearch
@@ -1518,7 +1515,6 @@ engines:
     categories: [general, web]
     timeout: 4.0
     shortcut: psvid
-    disabled: true
 
   - name: presearch news
     engine: presearch
@@ -1527,7 +1523,6 @@ engines:
     categories: [news, web]
     timeout: 4.0
     shortcut: psnews
-    disabled: true
 
   - name: pub.dev
     engine: xpath
